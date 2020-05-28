@@ -1,7 +1,10 @@
+import api from './api'
+
 class App {
     constructor() {
         this.repositories = []
         this.formEl = document.getElementById('repo-form')
+        this.inputEl = document.querySelector('input[name=repository]')
         this.listEl = document.getElementById('repos-list')
         this.registerHandlers()
     }
@@ -10,14 +13,27 @@ class App {
         this.formEl.onsubmit = event => this.addRepositoty(event)
     }
 
-    addRepositoty(event) {
+    async addRepositoty(event) {
         event.preventDefault()
+        const repoInput = this.inputEl.value
+
+        if(repoInput.length === 0)
+            return;
+
+        const response = await api.get(`/users/${repoInput}`)
+
+        console.log(response)
+
+        const { name, bio, html_url, avatar_url } = response.data
+
         this.repositories.push({
-            name: 'rocketseat.com.br',
-            description: 'Tire a sua ideia do papel e dê vida à sua startup',
-            avatar_url: 'https://avatars0.githubusercontent.com/u/28929274?v=4',
-            html_url: 'https://github.com/Rocketseat',
+            name,
+            bio,
+            avatar_url,
+            html_url,
         })
+
+        this.inputEl.value = '';
 
         this.render()
     }
@@ -33,7 +49,7 @@ class App {
             titleEl.appendChild(document.createTextNode(repo.name))
 
             let descriptionEl = document.createElement('p')
-            descriptionEl.appendChild(document.createTextNode(repo.description))
+            descriptionEl.appendChild(document.createTextNode(repo.bio))
 
             let linkEl = document.createElement('a')
             linkEl.setAttribute('target', '_blank')
